@@ -1,7 +1,7 @@
+import { useMachine } from "@xstate/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { nanoid } from "nanoid";
-import { useState } from "react";
-import { ThemedToken, codeToTokens } from "shiki";
+import { codeToTokens } from "shiki";
+import { editorMachine } from "./machine";
 
 const code = `return signUpRequest.pipe(
   Effect.provideService(Request.Request, req),
@@ -42,35 +42,10 @@ const { tokens, bg, themeName, fg } = await codeToTokens(code, {
   theme: "one-dark-pro",
 });
 
-interface TokenState {
-  id: string;
-  status: "visible" | "hidden";
-  tokenList: ThemedToken[];
-}
-
-const tokensWithId = tokens.map(
-  (token): TokenState => ({
-    id: nanoid(),
-    status: "visible",
-    tokenList: token,
-  })
-);
-
 export default function App() {
-  const [tokenState, setTokenState] = useState<TokenState[]>(tokensWithId);
-
-  const onHide = (id: string) => {
-    setTokenState((s) =>
-      s.map((ts) =>
-        ts.id !== id
-          ? ts
-          : {
-              ...ts,
-              status: "hidden",
-            }
-      )
-    );
-  };
+  const [snapshot, send] = useMachine(editorMachine, {
+    input: tokens,
+  });
 
   return (
     <div>
@@ -85,7 +60,7 @@ export default function App() {
         }}
       >
         <code>
-          {tokenState.map((token) => (
+          {snapshot.context.state.map((token) => (
             <AnimatePresence key={token.id}>
               {token.status !== "hidden" && (
                 <motion.span
@@ -95,9 +70,10 @@ export default function App() {
                   animate={{
                     opacity: 1,
                     x: 0,
+                    backgroundColor: token.isSelected ? "#fff" : undefined,
                   }}
                   exit={{ opacity: 0, x: 20 }}
-                  onClick={() => onHide(token.id)}
+                  onClick={() => send({ type: "select-toggle", id: token.id })}
                 >
                   {token.tokenList.map((themed, idx) => (
                     <span key={idx} style={{ color: themed.color }}>
