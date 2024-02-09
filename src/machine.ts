@@ -1,3 +1,4 @@
+import { HashSet } from "effect";
 import { nanoid } from "nanoid";
 import type { ThemedToken } from "shiki";
 import { assign, setup } from "xstate";
@@ -29,14 +30,19 @@ export const editorMachine = setup({
     const selectedFrameId = nanoid();
     return {
       selectedFrameId,
-      timeline: [{ id: selectedFrameId, events: [] }],
-      state: input.map(
-        (token): Context.TokenState => ({
-          id: nanoid(),
-          tokenList: token,
-          isSelected: false,
-        })
-      ),
+      selectedLines: HashSet.empty(),
+      timeline: [
+        {
+          id: selectedFrameId,
+          events: [],
+          code: input.map(
+            (token): Context.TokenState => ({
+              id: nanoid(),
+              tokenList: token,
+            })
+          ),
+        },
+      ],
     };
   },
   initial: "Idle",
