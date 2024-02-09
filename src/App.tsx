@@ -1,4 +1,5 @@
 import { useMachine } from "@xstate/react";
+import { Option, ReadonlyArray, pipe } from "effect";
 import { AnimatePresence, motion } from "framer-motion";
 import { codeToTokens } from "shiki";
 import { editorMachine } from "./machine";
@@ -60,30 +61,54 @@ export default function App() {
         }}
       >
         <code>
-          {snapshot.context.state.map((token) => (
-            <AnimatePresence key={token.id}>
-              {token.status !== "hidden" && (
-                <motion.span
-                  id={token.id}
-                  className="line"
-                  style={{ display: "block" }}
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                    backgroundColor: token.isSelected ? "#fff" : undefined,
-                  }}
-                  exit={{ opacity: 0, x: 20 }}
-                  onClick={() => send({ type: "select-toggle", id: token.id })}
-                >
-                  {token.tokenList.map((themed, idx) => (
-                    <span key={idx} style={{ color: themed.color }}>
-                      {themed.content}
-                    </span>
-                  ))}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          ))}
+          {snapshot.context.state.map((token) => {
+            const status = pipe(
+              snapshot.context.timeline,
+              ReadonlyArray.takeWhile(
+                (frame) => frame.id !== snapshot.context.selectedFrameId
+              ),
+              ReadonlyArray.reduce(
+                "visible" as "visible" | "hidden",
+                (status, frame) =>
+                  pipe(
+                    frame.events,
+                    ReadonlyArray.findFirst((event) => event.id === token.id),
+                    Option.match({
+                      onNone: () => status,
+                      onSome: (transition) => transition.event,
+                    })
+                  )
+              )
+            );
+
+            return (
+              <AnimatePresence key={token.id}>
+                {status !== "hidden" && (
+                  <motion.span
+                    id={token.id}
+                    className="line"
+                    style={{ display: "block" }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                      backgroundColor: token.isSelected ? "#fff" : undefined,
+                    }}
+                    initial={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    onClick={() =>
+                      send({ type: "select-toggle", id: token.id })
+                    }
+                  >
+                    {token.tokenList.map((themed, idx) => (
+                      <span key={idx} style={{ color: themed.color }}>
+                        {themed.content}
+                      </span>
+                    ))}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            );
+          })}
         </code>
       </pre>
 

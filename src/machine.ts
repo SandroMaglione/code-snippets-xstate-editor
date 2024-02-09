@@ -33,7 +33,6 @@ export const editorMachine = setup({
       state: input.map(
         (token): Context.TokenState => ({
           id: nanoid(),
-          status: "visible",
           tokenList: token,
           isSelected: false,
         })

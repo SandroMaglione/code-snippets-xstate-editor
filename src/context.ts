@@ -2,7 +2,6 @@ import type { ThemedToken } from "shiki";
 
 export interface TokenState {
   readonly id: string;
-  readonly status: "visible" | "hidden";
   readonly tokenList: ThemedToken[];
   readonly isSelected: boolean;
 }

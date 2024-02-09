@@ -8,6 +8,9 @@ dependencies:
   '@xstate/react':
     specifier: ^4.0.3
     version: 4.0.3(@types/react@18.2.55)(react@18.2.0)(xstate@5.6.2)
+  effect:
+    specifier: ^2.2.5
+    version: 2.2.5
   framer-motion:
     specifier: ^11.0.3
     version: 11.0.3(react-dom@18.2.0)(react@18.2.0)
@@ -1138,6 +1141,10 @@ packages:
     dependencies:
       esutils: 2.0.3
     dev: true
+
+  /effect@2.2.5:
+    resolution: {integrity: sha512-F1bfJXeecK6WpZDSU1UK8C8tUr3n7AqGVL1b8HWeVlHD4192x+6yN0Eb7Qa0CASike5dsbloTfidxBZFr0IpVg==}
+    dev: false
 
   /electron-to-chromium@1.4.663:
     resolution: {integrity: sha512-P4B6wnMUV2aLvqmny1RPlAQPUBTY+skNw4WLX0cVxYQVEzmLQ2h7K2Knc69szclEjcRW63Uj06IXQwOG7GbInQ==}
