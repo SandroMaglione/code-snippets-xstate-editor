@@ -11,7 +11,11 @@ interface TokenState {
 }
 
 interface TimelineState {
-  events: { readonly id: string; readonly event: "visible" | "hidden" }[];
+  readonly id: string;
+  readonly events: {
+    readonly id: string;
+    readonly event: "visible" | "hidden";
+  }[];
 }
 
 export const editorMachine = setup({
@@ -34,11 +38,34 @@ export const editorMachine = setup({
             }
       ),
     })),
+    onAddEvent: assign(({ context }, params: Events.AddEvent) => ({
+      timeline: context.timeline.map((frame) =>
+        frame.id !== params.timelineId
+          ? frame
+          : {
+              ...frame,
+              events: [
+                ...frame.events,
+                ...context.state
+                  .filter((ts) => ts.isSelected)
+                  .map((ts) => ({
+                    id: ts.id,
+                    event: params.status,
+                  })),
+              ],
+            }
+      ),
+    })),
   },
 }).createMachine({
   id: "editor-machine",
   context: ({ input }) => ({
-    timeline: [],
+    timeline: [
+      {
+        id: nanoid(),
+        events: [],
+      },
+    ],
     state: input.map(
       (token): TokenState => ({
         id: nanoid(),
@@ -56,6 +83,13 @@ export const editorMachine = setup({
           target: "Idle",
           actions: {
             type: "onSelectToggle",
+            params: ({ event }) => event,
+          },
+        },
+        "add-event": {
+          target: "Idle",
+          actions: {
+            type: "onAddEvent",
             params: ({ event }) => event,
           },
         },

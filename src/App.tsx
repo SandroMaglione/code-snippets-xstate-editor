@@ -86,6 +86,45 @@ export default function App() {
           ))}
         </code>
       </pre>
+
+      <section>
+        {snapshot.context.timeline.map((frame) => (
+          <div key={frame.id}>
+            <div>
+              <button
+                type="button"
+                onClick={() =>
+                  send({
+                    type: "add-event",
+                    status: "visible",
+                    timelineId: frame.id,
+                  })
+                }
+              >
+                Visible
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  send({
+                    type: "add-event",
+                    status: "hidden",
+                    timelineId: frame.id,
+                  })
+                }
+              >
+                Hidden
+              </button>
+            </div>
+
+            <div>
+              {frame.events.map((event) => (
+                <p key={event.id}>{event.event}</p>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }
