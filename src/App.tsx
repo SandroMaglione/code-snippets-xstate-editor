@@ -87,9 +87,24 @@ export default function App() {
         </code>
       </pre>
 
-      <section>
+      <section style={{ display: "flex", columnGap: "2rem" }}>
         {snapshot.context.timeline.map((frame) => (
           <div key={frame.id}>
+            {snapshot.context.selectedFrameId === frame.id && (
+              <span>Selected</span>
+            )}
+
+            <div>
+              <button
+                type="button"
+                onClick={() =>
+                  send({ type: "select-frame", frameId: frame.id })
+                }
+              >
+                Select
+              </button>
+            </div>
+
             <div>
               <button
                 type="button"
@@ -97,7 +112,7 @@ export default function App() {
                   send({
                     type: "add-event",
                     status: "visible",
-                    timelineId: frame.id,
+                    frameId: frame.id,
                   })
                 }
               >
@@ -109,7 +124,7 @@ export default function App() {
                   send({
                     type: "add-event",
                     status: "hidden",
-                    timelineId: frame.id,
+                    frameId: frame.id,
                   })
                 }
               >
@@ -124,6 +139,12 @@ export default function App() {
             </div>
           </div>
         ))}
+
+        <div>
+          <button type="button" onClick={() => send({ type: "add-frame" })}>
+            Add
+          </button>
+        </div>
       </section>
     </div>
   );
