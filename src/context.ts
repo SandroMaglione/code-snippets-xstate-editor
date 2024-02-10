@@ -1,21 +1,25 @@
-import type { HashSet } from "effect";
+import { Data, HashSet } from "effect";
 import type { ThemedToken } from "shiki";
 
 export interface TokenState {
   readonly id: string;
   readonly tokenList: ThemedToken[];
+  readonly status: "hidden" | "visible";
 }
+
+export type EventMutation = Data.TaggedEnum<{
+  Hidden: { readonly id: string };
+  AddAfter: { readonly id: string; readonly content: string };
+}>;
+export const EventMutation = Data.taggedEnum<EventMutation>();
 
 export interface TimelineState {
   readonly id: string;
-  readonly code: TokenState[];
-  readonly events: {
-    readonly id: string;
-    readonly event: "visible" | "hidden";
-  }[];
+  readonly events: EventMutation[];
 }
 
 export interface Context {
+  readonly code: readonly TokenState[];
   readonly timeline: readonly TimelineState[];
   readonly selectedFrameId: string;
   readonly selectedLines: HashSet.HashSet<string>;

@@ -1,6 +1,6 @@
-import { HashSet } from "effect";
+import { HashSet, Match } from "effect";
 import { nanoid } from "nanoid";
-import type * as Context from "./context";
+import * as Context from "./context";
 import type * as Events from "./events";
 
 export const onSelectToggle = (
@@ -23,13 +23,15 @@ export const onAddEvent = (
           ...frame,
           events: [
             ...frame.events,
-            // TODO
-            // ...context.state
-            //   .filter((ts) => ts.isSelected)
-            //   .map((ts) => ({
-            //     id: ts.id,
-            //     event: params.status,
-            //   })),
+            ...[...context.selectedLines].map((id) =>
+              Match.value(params.mutation).pipe(
+                Match.tag("Hidden", () => Context.EventMutation.Hidden({ id })),
+                Match.tag("AddAfter", (e) =>
+                  Context.EventMutation.AddAfter({ id, content: e.content })
+                ),
+                Match.exhaustive
+              )
+            ),
           ],
         }
   ),
@@ -42,7 +44,6 @@ export const onAddFrame = (
     ...context.timeline,
     {
       id: nanoid(),
-      code: context.timeline[context.timeline.length - 1].code, // TODO: Unsafe!
       events: [],
     },
   ],

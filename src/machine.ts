@@ -31,16 +31,17 @@ export const editorMachine = setup({
     return {
       selectedFrameId,
       selectedLines: HashSet.empty(),
+      code: input.map(
+        (token): Context.TokenState => ({
+          id: nanoid(),
+          tokenList: token,
+          status: "visible",
+        })
+      ),
       timeline: [
         {
           id: selectedFrameId,
           events: [],
-          code: input.map(
-            (token): Context.TokenState => ({
-              id: nanoid(),
-              tokenList: token,
-            })
-          ),
         },
       ],
     };

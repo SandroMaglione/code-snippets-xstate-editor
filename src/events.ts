@@ -1,12 +1,20 @@
+import { Data } from "effect";
+
 export interface SelectToggle {
   readonly type: "select-toggle";
   readonly id: string;
 }
 
+export type EventSend = Data.TaggedEnum<{
+  Hidden: {};
+  AddAfter: { readonly content: string };
+}>;
+export const EventSend = Data.taggedEnum<EventSend>();
+
 export interface AddEvent {
   readonly type: "add-event";
   readonly frameId: string;
-  readonly status: "hidden" | "visible";
+  readonly mutation: EventSend;
 }
 
 export interface AddFrame {

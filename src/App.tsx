@@ -1,7 +1,9 @@
 import { useMachine } from "@xstate/react";
-import { HashSet, Option, ReadonlyArray, pipe } from "effect";
+import { HashSet, Match, ReadonlyArray, pipe } from "effect";
 import { AnimatePresence, motion } from "framer-motion";
+import { nanoid } from "nanoid";
 import { codeToTokens } from "shiki";
+import * as Events from "./events";
 import { editorMachine } from "./machine";
 
 const code = `return signUpRequest.pipe(
@@ -44,6 +46,48 @@ export default function App() {
     input: tokens,
   });
 
+  const timelineHistory = pipe(
+    snapshot.context.timeline,
+    ReadonlyArray.takeWhile((tm) => tm.id !== snapshot.context.selectedFrameId)
+  );
+
+  console.log({ timelineHistory });
+
+  const currentCode = pipe(
+    timelineHistory,
+    ReadonlyArray.reduce(snapshot.context.code, (code, tm) =>
+      pipe(
+        tm.events,
+        ReadonlyArray.reduce(code, (ts, event) =>
+          Match.value(event).pipe(
+            Match.tag("Hidden", (e) =>
+              ts.map((token) =>
+                token.id !== e.id
+                  ? token
+                  : { ...token, status: "hidden" as const }
+              )
+            ),
+            Match.tag("AddAfter", (e) =>
+              ts.flatMap((token) =>
+                token.id !== e.id
+                  ? [token]
+                  : [
+                      token,
+                      {
+                        ...token,
+                        status: "visible" as const,
+                        id: nanoid(),
+                      },
+                    ]
+              )
+            ),
+            Match.exhaustive
+          )
+        )
+      )
+    )
+  );
+
   return (
     <div>
       <pre
@@ -55,74 +99,40 @@ export default function App() {
         }}
       >
         <code>
-          {pipe(
-            snapshot.context.timeline,
-            ReadonlyArray.findFirst(
-              (frame) => frame.id === snapshot.context.selectedFrameId
-            ),
-            Option.match({
-              onNone: () => "💁🏼‍♂️",
-              onSome: (frame) => (
-                <>
-                  {frame.code.map((token) => {
-                    const status = pipe(
-                      snapshot.context.timeline,
-                      ReadonlyArray.takeWhile(
-                        (frame) => frame.id !== snapshot.context.selectedFrameId
-                      ),
-                      ReadonlyArray.reduce(
-                        "visible" as "visible" | "hidden",
-                        (status, frame) =>
-                          pipe(
-                            frame.events,
-                            ReadonlyArray.findFirst(
-                              (event) => event.id === token.id
-                            ),
-                            Option.match({
-                              onNone: () => status,
-                              onSome: (transition) => transition.event,
-                            })
-                          )
+          {currentCode.map((token) => {
+            return (
+              <AnimatePresence key={token.id}>
+                {token.status !== "hidden" && (
+                  <motion.span
+                    id={token.id}
+                    key={token.id}
+                    className="line"
+                    style={{ display: "block" }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                      backgroundColor: snapshot.context.selectedLines.pipe(
+                        HashSet.has(token.id)
                       )
-                    );
-
-                    return (
-                      <AnimatePresence key={token.id}>
-                        {status !== "hidden" && (
-                          <motion.span
-                            id={token.id}
-                            className="line"
-                            style={{ display: "block" }}
-                            animate={{
-                              opacity: 1,
-                              x: 0,
-                              backgroundColor:
-                                snapshot.context.selectedLines.pipe(
-                                  HashSet.has(token.id)
-                                )
-                                  ? "#fff"
-                                  : undefined,
-                            }}
-                            initial={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            onClick={() =>
-                              send({ type: "select-toggle", id: token.id })
-                            }
-                          >
-                            {token.tokenList.map((themed, idx) => (
-                              <span key={idx} style={{ color: themed.color }}>
-                                {themed.content}
-                              </span>
-                            ))}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    );
-                  })}
-                </>
-              ),
-            })
-          )}
+                        ? "#fff"
+                        : undefined,
+                    }}
+                    initial={{ opacity: 0, x: 20 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    onClick={() =>
+                      send({ type: "select-toggle", id: token.id })
+                    }
+                  >
+                    {token.tokenList.map((themed, idx) => (
+                      <span key={idx} style={{ color: themed.color }}>
+                        {themed.content}
+                      </span>
+                    ))}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            );
+          })}
         </code>
       </pre>
 
@@ -150,7 +160,9 @@ export default function App() {
                 onClick={() =>
                   send({
                     type: "add-event",
-                    status: "visible",
+                    mutation: Events.EventSend.AddAfter({
+                      content: "const a = 10;",
+                    }),
                     frameId: frame.id,
                   })
                 }
@@ -162,7 +174,7 @@ export default function App() {
                 onClick={() =>
                   send({
                     type: "add-event",
-                    status: "hidden",
+                    mutation: Events.EventSend.Hidden(),
                     frameId: frame.id,
                   })
                 }
@@ -173,7 +185,7 @@ export default function App() {
 
             <div>
               {frame.events.map((event) => (
-                <p key={event.id}>{event.event}</p>
+                <p key={event.id}>{event._tag}</p>
               ))}
             </div>
           </div>
