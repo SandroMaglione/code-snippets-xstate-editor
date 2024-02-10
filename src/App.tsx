@@ -1,7 +1,6 @@
 import { useMachine } from "@xstate/react";
 import { HashSet, Match, ReadonlyArray, pipe } from "effect";
 import { AnimatePresence, motion } from "framer-motion";
-import { nanoid } from "nanoid";
 import { codeToTokens } from "shiki";
 import * as Events from "./events";
 import { editorMachine } from "./machine";
@@ -36,14 +35,14 @@ const code = `return signUpRequest.pipe(
   Effect.runPromise
 );`;
 
-const { tokens, bg, themeName, fg } = await codeToTokens(code, {
+const { bg, themeName, fg } = await codeToTokens(code, {
   lang: "typescript",
   theme: "one-dark-pro",
 });
 
 export default function App() {
   const [snapshot, send] = useMachine(editorMachine, {
-    input: tokens,
+    input: { source: code },
   });
 
   const timelineHistory = pipe(
@@ -69,16 +68,7 @@ export default function App() {
             ),
             Match.tag("AddAfter", (e) =>
               ts.flatMap((token) =>
-                token.id !== e.id
-                  ? [token]
-                  : [
-                      token,
-                      {
-                        ...token,
-                        status: "visible" as const,
-                        id: nanoid(),
-                      },
-                    ]
+                token.id !== e.id ? [token] : [token, e.newToken]
               )
             ),
             Match.exhaustive
@@ -160,9 +150,7 @@ export default function App() {
                 onClick={() =>
                   send({
                     type: "add-event",
-                    mutation: Events.EventSend.AddAfter({
-                      content: "const a = 10;",
-                    }),
+                    mutation: Events.EventSend.AddAfter(),
                     frameId: frame.id,
                   })
                 }
@@ -196,6 +184,18 @@ export default function App() {
             Add
           </button>
         </div>
+      </section>
+
+      <section>
+        <textarea
+          name="content"
+          id="content"
+          rows={2}
+          value={snapshot.context.content}
+          onChange={(e) =>
+            send({ type: "update-content", content: e.target.value })
+          }
+        />
       </section>
     </div>
   );

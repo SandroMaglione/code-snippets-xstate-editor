@@ -1,7 +1,8 @@
-import { HashSet, Match } from "effect";
+import { HashSet, Match, ReadonlyArray, pipe } from "effect";
 import { nanoid } from "nanoid";
 import * as Context from "./context";
 import type * as Events from "./events";
+import { highlighter } from "./highlighter";
 
 export const onSelectToggle = (
   context: Context.Context,
@@ -23,14 +24,37 @@ export const onAddEvent = (
           ...frame,
           events: [
             ...frame.events,
-            ...[...context.selectedLines].map((id) =>
-              Match.value(params.mutation).pipe(
-                Match.tag("Hidden", () => Context.EventMutation.Hidden({ id })),
-                Match.tag("AddAfter", (e) =>
-                  Context.EventMutation.AddAfter({ id, content: e.content })
-                ),
-                Match.exhaustive
-              )
+            ...Match.value(params.mutation).pipe(
+              Match.tag("Hidden", () =>
+                [...context.selectedLines].map((id) =>
+                  Context.EventMutation.Hidden({ id })
+                )
+              ),
+              Match.tag("AddAfter", () =>
+                pipe(
+                  [...context.selectedLines],
+                  ReadonlyArray.unsafeGet(
+                    context.selectedLines.pipe(HashSet.size) - 1
+                  ),
+                  (id) =>
+                    highlighter
+                      .codeToTokens(context.content, {
+                        theme: "one-dark-pro",
+                        lang: "typescript",
+                      })
+                      .tokens.map((tokenList) =>
+                        Context.EventMutation.AddAfter({
+                          id,
+                          newToken: {
+                            id: nanoid(),
+                            status: "visible",
+                            tokenList,
+                          },
+                        })
+                      )
+                )
+              ),
+              Match.exhaustive
             ),
           ],
         }
@@ -53,4 +77,10 @@ export const onSelectFrame = (
   params: Events.SelectFrame
 ): Partial<Context.Context> => ({
   selectedFrameId: params.frameId,
+});
+
+export const onUpdateContent = (
+  params: Events.UpdateContent
+): Partial<Context.Context> => ({
+  content: params.content,
 });

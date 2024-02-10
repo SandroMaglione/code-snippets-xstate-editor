@@ -9,7 +9,7 @@ export interface TokenState {
 
 export type EventMutation = Data.TaggedEnum<{
   Hidden: { readonly id: string };
-  AddAfter: { readonly id: string; readonly content: string };
+  AddAfter: { readonly id: string; readonly newToken: TokenState };
 }>;
 export const EventMutation = Data.taggedEnum<EventMutation>();
 
@@ -19,6 +19,7 @@ export interface TimelineState {
 }
 
 export interface Context {
+  readonly content: string;
   readonly code: readonly TokenState[];
   readonly timeline: readonly TimelineState[];
   readonly selectedFrameId: string;

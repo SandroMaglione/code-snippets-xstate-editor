@@ -1,14 +1,14 @@
 import { HashSet } from "effect";
 import { nanoid } from "nanoid";
-import type { ThemedToken } from "shiki";
 import { assign, setup } from "xstate";
 import * as Actions from "./actions";
 import type * as Context from "./context";
 import type * as Events from "./events";
+import { highlighter } from "./highlighter";
 
 export const editorMachine = setup({
   types: {
-    input: {} as ThemedToken[][],
+    input: {} as { readonly source: string },
     context: {} as Context.Context,
     events: {} as Events.Events,
   },
@@ -23,21 +23,30 @@ export const editorMachine = setup({
     onSelectFrame: assign((_, params: Events.SelectFrame) =>
       Actions.onSelectFrame(params)
     ),
+    onUpdateContent: assign((_, params: Events.UpdateContent) =>
+      Actions.onUpdateContent(params)
+    ),
   },
 }).createMachine({
   id: "editor-machine",
   context: ({ input }) => {
     const selectedFrameId = nanoid();
     return {
+      content: "",
       selectedFrameId,
       selectedLines: HashSet.empty(),
-      code: input.map(
-        (token): Context.TokenState => ({
-          id: nanoid(),
-          tokenList: token,
-          status: "visible",
+      code: highlighter
+        .codeToTokens(input.source, {
+          theme: "one-dark-pro",
+          lang: "typescript",
         })
-      ),
+        .tokens.map(
+          (token): Context.TokenState => ({
+            id: nanoid(),
+            tokenList: token,
+            status: "visible",
+          })
+        ),
       timeline: [
         {
           id: selectedFrameId,
@@ -74,6 +83,13 @@ export const editorMachine = setup({
           target: "Idle",
           actions: {
             type: "onSelectFrame",
+            params: ({ event }) => event,
+          },
+        },
+        "update-content": {
+          target: "Idle",
+          actions: {
+            type: "onUpdateContent",
             params: ({ event }) => event,
           },
         },

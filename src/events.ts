@@ -1,5 +1,10 @@
 import { Data } from "effect";
 
+export interface UpdateContent {
+  readonly type: "update-content";
+  readonly content: string;
+}
+
 export interface SelectToggle {
   readonly type: "select-toggle";
   readonly id: string;
@@ -7,7 +12,7 @@ export interface SelectToggle {
 
 export type EventSend = Data.TaggedEnum<{
   Hidden: {};
-  AddAfter: { readonly content: string };
+  AddAfter: {};
 }>;
 export const EventSend = Data.taggedEnum<EventSend>();
 
@@ -26,4 +31,9 @@ export interface SelectFrame {
   readonly frameId: string;
 }
 
-export type Events = SelectToggle | AddEvent | AddFrame | SelectFrame;
+export type Events =
+  | SelectToggle
+  | AddEvent
+  | AddFrame
+  | SelectFrame
+  | UpdateContent;
