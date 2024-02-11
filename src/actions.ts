@@ -1,4 +1,4 @@
-import { HashSet, Match, ReadonlyArray, pipe } from "effect";
+import { HashSet, Match, Option, ReadonlyArray, pipe } from "effect";
 import { nanoid } from "nanoid";
 import * as Context from "./context";
 import type * as Events from "./events";
@@ -33,25 +33,55 @@ export const onAddEvent = (
               Match.tag("AddAfter", () =>
                 pipe(
                   [...context.selectedLines],
-                  ReadonlyArray.unsafeGet(
-                    context.selectedLines.pipe(HashSet.size) - 1
+                  ReadonlyArray.last,
+                  Option.flatMap((lineId) =>
+                    pipe(
+                      context.code,
+                      ReadonlyArray.findFirstIndex((ts) => ts.id === lineId)
+                    )
                   ),
-                  (id) =>
-                    highlighter
-                      .codeToTokens(context.content, {
-                        theme: "one-dark-pro",
-                        lang: "typescript",
-                      })
-                      .tokens.map((tokenList) =>
+                  Option.flatMap((lastIndex) =>
+                    pipe(
+                      context.code,
+                      ReadonlyArray.get(lastIndex),
+                      // TODO: "Filter" hidden lines
+                      Option.map((ts) => ({ ...ts, index: lastIndex }))
+                    )
+                  ),
+                  Option.map((tsWithIndex) => {
+                    const addLines = context.content.split("\n");
+                    return pipe(
+                      context.code,
+                      ReadonlyArray.flatMap((ts, i) =>
+                        i === tsWithIndex.index
+                          ? [ts.origin, ...addLines]
+                          : [ts.origin]
+                      ),
+                      ReadonlyArray.join("\n"),
+                      (code) =>
+                        highlighter.codeToTokens(code, {
+                          theme: "one-dark-pro",
+                          lang: "typescript",
+                        }).tokens,
+                      (list) =>
+                        list.slice(
+                          tsWithIndex.index,
+                          tsWithIndex.index + addLines.length
+                        ),
+                      ReadonlyArray.map((tokenList, i) =>
                         Context.EventMutation.AddAfter({
-                          id,
+                          id: tsWithIndex.id,
                           newToken: {
                             id: nanoid(),
+                            origin: addLines[i],
                             status: "visible",
                             tokenList,
                           },
                         })
                       )
+                    );
+                  }),
+                  Option.getOrElse(() => [])
                 )
               ),
               Match.exhaustive

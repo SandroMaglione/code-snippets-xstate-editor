@@ -5,6 +5,7 @@ export interface TokenState {
   readonly id: string;
   readonly tokenList: ThemedToken[];
   readonly status: "hidden" | "visible";
+  readonly origin: string;
 }
 
 export type EventMutation = Data.TaggedEnum<{

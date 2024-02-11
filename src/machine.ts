@@ -45,6 +45,7 @@ export const editorMachine = setup({
             id: nanoid(),
             tokenList: token,
             status: "visible",
+            origin: token.map((tt) => tt.content).join(""),
           })
         ),
       timeline: [
