@@ -31,8 +31,13 @@ export interface SelectFrame {
   readonly frameId: string;
 }
 
+export interface UnselectAll {
+  readonly type: "unselect-all";
+}
+
 export type Events =
   | SelectToggle
+  | UnselectAll
   | AddEvent
   | AddFrame
   | SelectFrame

@@ -94,9 +94,15 @@ export default function App() {
         }}
       >
         <code>
-          {currentCode.map((token) => {
-            return (
-              <AnimatePresence key={token.id}>
+          {currentCode.map((token) => (
+            <span key={token.id} style={{ display: "flex", columnGap: "1rem" }}>
+              <button
+                type="button"
+                onClick={() => send({ type: "select-toggle", id: token.id })}
+              >
+                S
+              </button>
+              <AnimatePresence>
                 {token.status !== "hidden" && (
                   <motion.span
                     id={token.id}
@@ -118,9 +124,6 @@ export default function App() {
                     }}
                     initial={{ opacity: 0, x: 20 }}
                     exit={{ opacity: 0, x: 20 }}
-                    onClick={() =>
-                      send({ type: "select-toggle", id: token.id })
-                    }
                   >
                     {token.tokenList.map((themed, idx) => (
                       <span key={idx} style={{ color: themed.color }}>
@@ -130,10 +133,14 @@ export default function App() {
                   </motion.span>
                 )}
               </AnimatePresence>
-            );
-          })}
+            </span>
+          ))}
         </code>
       </pre>
+
+      <button type="button" onClick={() => send({ type: "unselect-all" })}>
+        Unselect all
+      </button>
 
       <section style={{ display: "flex", columnGap: "2rem" }}>
         {snapshot.context.timeline.map((frame) => (

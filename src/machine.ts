@@ -16,6 +16,7 @@ export const editorMachine = setup({
     onSelectToggle: assign(({ context }, params: Events.SelectToggle) =>
       Actions.onSelectToggle(context, params)
     ),
+    onUnselectAll: assign(({ context }) => Actions.onUnselectAll(context)),
     onAddEvent: assign(({ context }, params: Events.AddEvent) =>
       Actions.onAddEvent(context, params)
     ),
@@ -66,6 +67,12 @@ export const editorMachine = setup({
           actions: {
             type: "onSelectToggle",
             params: ({ event }) => event,
+          },
+        },
+        "unselect-all": {
+          target: "Idle",
+          actions: {
+            type: "onUnselectAll",
           },
         },
         "add-event": {

@@ -20,6 +20,16 @@ export const onSelectToggle = (
   ),
 });
 
+export const onUnselectAll = (
+  context: Context.Context
+): Partial<Context.Context> => ({
+  timeline: context.timeline.map((frame) =>
+    frame.id !== context.selectedFrameId
+      ? frame
+      : { ...frame, selectedLines: HashSet.empty() }
+  ),
+});
+
 export const onAddEvent = (
   context: Context.Context,
   params: Events.AddEvent
@@ -51,7 +61,6 @@ export const onAddEvent = (
                     pipe(
                       context.code,
                       ReadonlyArray.get(lastIndex),
-                      // TODO: "Filter" hidden lines
                       Option.map((ts) => ({ ...ts, index: lastIndex }))
                     )
                   ),
