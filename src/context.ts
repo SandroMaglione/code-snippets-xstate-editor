@@ -25,6 +25,9 @@ export interface Context {
   readonly code: readonly TokenState[];
   readonly timeline: readonly TimelineState[];
   readonly selectedFrameId: string;
+  readonly bg: string | undefined;
+  readonly themeName: string | undefined;
+  readonly fg: string | undefined;
 }
 
 export const Context: Context = {
@@ -32,4 +35,7 @@ export const Context: Context = {
   content: "",
   selectedFrameId: "",
   timeline: [],
+  bg: undefined,
+  fg: undefined,
+  themeName: undefined,
 };

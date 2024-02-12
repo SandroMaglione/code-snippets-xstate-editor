@@ -10,25 +10,30 @@ export interface Input {
 export const init = (input: Input): Effect.Effect<Context.Context> =>
   Effect.gen(function* (_) {
     const highlighter = yield* _(Highlighter.Highlighter);
+    const { tokens, bg, fg, themeName } = highlighter.codeToTokens(
+      input.source,
+      {
+        theme: "one-dark-pro",
+        lang: "typescript",
+      }
+    );
 
     const selectedFrameId = nanoid();
     return {
       content: "",
       selectedFrameId,
       selectedLines: HashSet.empty(),
-      code: highlighter
-        .codeToTokens(input.source, {
-          theme: "one-dark-pro",
-          lang: "typescript",
+      bg,
+      fg,
+      themeName,
+      code: tokens.map(
+        (token): Context.TokenState => ({
+          id: nanoid(),
+          tokenList: token,
+          status: "visible",
+          origin: token.map((tt) => tt.content).join(""),
         })
-        .tokens.map(
-          (token): Context.TokenState => ({
-            id: nanoid(),
-            tokenList: token,
-            status: "visible",
-            origin: token.map((tt) => tt.content).join(""),
-          })
-        ),
+      ),
       timeline: [
         {
           id: selectedFrameId,

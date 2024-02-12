@@ -1,7 +1,6 @@
 import { useMachine } from "@xstate/react";
 import { HashSet, Match, Option, ReadonlyArray, pipe } from "effect";
 import { AnimatePresence, motion } from "framer-motion";
-import { codeToTokens } from "shiki";
 import * as Events from "./events";
 import { editorMachine } from "./machine";
 
@@ -34,11 +33,6 @@ const code = `return signUpRequest.pipe(
   Logger.withMinimumLogLevel(LogLevel.All),
   Effect.runPromise
 );`;
-
-const { bg, themeName, fg } = await codeToTokens(code, {
-  lang: "typescript",
-  theme: "one-dark-pro",
-});
 
 export default function App() {
   const [snapshot, send] = useMachine(editorMachine, {
@@ -86,24 +80,26 @@ export default function App() {
   return (
     <div>
       <pre
-        className={`shiki ${themeName}`}
+        className={`shiki ${snapshot.context.themeName}`}
         tabIndex={0}
         style={{
-          backgroundColor: bg,
-          color: fg,
+          backgroundColor: snapshot.context.bg,
+          color: snapshot.context.fg,
         }}
       >
         <code>
           {currentCode.map((token) => (
-            <span key={token.id} style={{ display: "flex", columnGap: "1rem" }}>
-              <button
-                type="button"
-                onClick={() => send({ type: "select-toggle", id: token.id })}
-              >
-                S
-              </button>
-              <AnimatePresence>
-                {token.status !== "hidden" && (
+            <AnimatePresence key={token.id}>
+              {token.status !== "hidden" && (
+                <span style={{ display: "flex", columnGap: "1rem" }}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      send({ type: "select-toggle", id: token.id })
+                    }
+                  >
+                    S
+                  </button>
                   <motion.span
                     id={token.id}
                     key={token.id}
@@ -131,9 +127,9 @@ export default function App() {
                       </span>
                     ))}
                   </motion.span>
-                )}
-              </AnimatePresence>
-            </span>
+                </span>
+              )}
+            </AnimatePresence>
           ))}
         </code>
       </pre>
