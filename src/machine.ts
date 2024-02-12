@@ -52,6 +52,7 @@ export const editorMachine = setup({
         {
           id: selectedFrameId,
           events: [],
+          selectedLines: HashSet.empty(),
         },
       ],
     };

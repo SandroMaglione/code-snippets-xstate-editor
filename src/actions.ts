@@ -8,9 +8,16 @@ export const onSelectToggle = (
   context: Context.Context,
   params: Events.SelectToggle
 ): Partial<Context.Context> => ({
-  selectedLines: context.selectedLines.pipe(HashSet.has(params.id))
-    ? context.selectedLines.pipe(HashSet.remove(params.id))
-    : context.selectedLines.pipe(HashSet.add(params.id)),
+  timeline: context.timeline.map((frame) =>
+    frame.id !== context.selectedFrameId
+      ? frame
+      : {
+          ...frame,
+          selectedLines: frame.selectedLines.pipe(HashSet.has(params.id))
+            ? frame.selectedLines.pipe(HashSet.remove(params.id))
+            : frame.selectedLines.pipe(HashSet.add(params.id)),
+        }
+  ),
 });
 
 export const onAddEvent = (
@@ -26,13 +33,13 @@ export const onAddEvent = (
             ...frame.events,
             ...Match.value(params.mutation).pipe(
               Match.tag("Hidden", () =>
-                [...context.selectedLines].map((id) =>
+                [...frame.selectedLines].map((id) =>
                   Context.EventMutation.Hidden({ id })
                 )
               ),
               Match.tag("AddAfter", () =>
                 pipe(
-                  [...context.selectedLines],
+                  [...frame.selectedLines],
                   ReadonlyArray.last,
                   Option.flatMap((lineId) =>
                     pipe(
@@ -99,6 +106,7 @@ export const onAddFrame = (
     {
       id: nanoid(),
       events: [],
+      selectedLines: HashSet.empty(),
     },
   ],
 });

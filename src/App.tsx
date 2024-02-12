@@ -1,5 +1,5 @@
 import { useMachine } from "@xstate/react";
-import { HashSet, Match, ReadonlyArray, pipe } from "effect";
+import { HashSet, Match, Option, ReadonlyArray, pipe } from "effect";
 import { AnimatePresence, motion } from "framer-motion";
 import { codeToTokens } from "shiki";
 import * as Events from "./events";
@@ -44,6 +44,11 @@ export default function App() {
   const [snapshot, send] = useMachine(editorMachine, {
     input: { source: code },
   });
+
+  const timelineSelected = pipe(
+    snapshot.context.timeline,
+    ReadonlyArray.findFirst((tm) => tm.id === snapshot.context.selectedFrameId)
+  );
 
   const timelineHistory = pipe(
     snapshot.context.timeline,
@@ -101,8 +106,12 @@ export default function App() {
                     animate={{
                       opacity: 1,
                       x: 0,
-                      backgroundColor: snapshot.context.selectedLines.pipe(
-                        HashSet.has(token.id)
+                      backgroundColor: pipe(
+                        timelineSelected,
+                        Option.map((tm) =>
+                          tm.selectedLines.pipe(HashSet.has(token.id))
+                        ),
+                        Option.getOrElse(() => false)
                       )
                         ? "#fff"
                         : undefined,

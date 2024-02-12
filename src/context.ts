@@ -16,6 +16,7 @@ export const EventMutation = Data.taggedEnum<EventMutation>();
 
 export interface TimelineState {
   readonly id: string;
+  readonly selectedLines: HashSet.HashSet<string>;
   readonly events: EventMutation[];
 }
 
@@ -24,5 +25,4 @@ export interface Context {
   readonly code: readonly TokenState[];
   readonly timeline: readonly TimelineState[];
   readonly selectedFrameId: string;
-  readonly selectedLines: HashSet.HashSet<string>;
 }
