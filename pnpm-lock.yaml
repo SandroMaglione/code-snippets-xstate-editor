@@ -9,8 +9,8 @@ dependencies:
     specifier: ^4.0.3
     version: 4.0.3(@types/react@18.2.55)(react@18.2.0)(xstate@5.6.2)
   effect:
-    specifier: ^2.2.5
-    version: 2.2.5
+    specifier: ^2.3.2
+    version: 2.3.2
   framer-motion:
     specifier: ^11.0.3
     version: 11.0.3(react-dom@18.2.0)(react@18.2.0)
@@ -53,8 +53,8 @@ devDependencies:
     specifier: ^0.4.5
     version: 0.4.5(eslint@8.56.0)
   shiki:
-    specifier: ^1.0.0
-    version: 1.0.0
+    specifier: ^1.1.1
+    version: 1.1.1
   typescript:
     specifier: ^5.2.2
     version: 5.3.3
@@ -726,8 +726,8 @@ packages:
     dev: true
     optional: true
 
-  /@shikijs/core@1.0.0:
-    resolution: {integrity: sha512-UMKGMZ+8b88N0/n6DWwWth1PHsOaxjW+R2u+hzSiargZWTv+l3s1l8dhuIxUSsEUPlBDKLs2CSMiFZeviKQM1w==}
+  /@shikijs/core@1.1.1:
+    resolution: {integrity: sha512-WSHuW0i4W04+UZgim378oxHBAp4S5X3hVI2zXh+t5v2fx2u/7QXz9VNisoOD/CA4O9Lc6Zs97TrKiDbWyZua6Q==}
     dev: true
 
   /@types/babel__core@7.20.5:
@@ -1142,8 +1142,8 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /effect@2.2.5:
-    resolution: {integrity: sha512-F1bfJXeecK6WpZDSU1UK8C8tUr3n7AqGVL1b8HWeVlHD4192x+6yN0Eb7Qa0CASike5dsbloTfidxBZFr0IpVg==}
+  /effect@2.3.2:
+    resolution: {integrity: sha512-cEgbb56c9415hiHwX55mG3w8IH147bk1W9i12fEpM+LBCmMISrFoYFXPTxVYA1ezNKJW/6rrBdNTRBM8DVYrBw==}
     dev: false
 
   /electron-to-chromium@1.4.663:
@@ -1842,10 +1842,10 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /shiki@1.0.0:
-    resolution: {integrity: sha512-rOUGJa3yFGgOrEoiELYxraoBbag3ZWf9bpodlr05Wjm85Scx8OIX+otdSefq9Pk7L47TKEzGodSQb4L38jka6A==}
+  /shiki@1.1.1:
+    resolution: {integrity: sha512-7ksyiu01NltBvEcLq9GcguF+7RGa5lDwozjgdbiXnlkro1FtMCcrVtHUWbKuYBSOZW74gC4KlnBcgRCwK2ERAw==}
     dependencies:
-      '@shikijs/core': 1.0.0
+      '@shikijs/core': 1.1.1
     dev: true
 
   /slash@3.0.0:

@@ -26,3 +26,10 @@ export interface Context {
   readonly timeline: readonly TimelineState[];
   readonly selectedFrameId: string;
 }
+
+export const Context: Context = {
+  code: [],
+  content: "",
+  selectedFrameId: "",
+  timeline: [],
+};

@@ -1,25 +1,32 @@
-import { HashSet } from "effect";
-import { nanoid } from "nanoid";
-import { assign, setup } from "xstate";
+import { Effect } from "effect";
+import { assign, fromPromise, setup } from "xstate";
 import * as Actions from "./actions";
-import type * as Context from "./context";
+import * as Context from "./context";
 import type * as Events from "./events";
-import { highlighter } from "./highlighter";
+import * as Input from "./input";
 
 export const editorMachine = setup({
   types: {
-    input: {} as { readonly source: string },
+    input: {} as Input.Input,
     context: {} as Context.Context,
     events: {} as Events.Events,
+  },
+  actors: {
+    onInit: fromPromise<Context.Context, Input.Input>(({ input }) =>
+      Input.init(input).pipe(Effect.runPromise)
+    ),
+    onAddEvent: fromPromise<
+      Partial<Context.Context>,
+      { params: Events.AddEvent; context: Context.Context }
+    >(({ input: { context, params } }) =>
+      Actions.onAddEvent(context, params).pipe(Effect.runPromise)
+    ),
   },
   actions: {
     onSelectToggle: assign(({ context }, params: Events.SelectToggle) =>
       Actions.onSelectToggle(context, params)
     ),
     onUnselectAll: assign(({ context }) => Actions.onUnselectAll(context)),
-    onAddEvent: assign(({ context }, params: Events.AddEvent) =>
-      Actions.onAddEvent(context, params)
-    ),
     onAddFrame: assign(({ context }) => Actions.onAddFrame(context)),
     onSelectFrame: assign((_, params: Events.SelectFrame) =>
       Actions.onSelectFrame(params)
@@ -30,36 +37,39 @@ export const editorMachine = setup({
   },
 }).createMachine({
   id: "editor-machine",
-  context: ({ input }) => {
-    const selectedFrameId = nanoid();
-    return {
-      content: "",
-      selectedFrameId,
-      selectedLines: HashSet.empty(),
-      code: highlighter
-        .codeToTokens(input.source, {
-          theme: "one-dark-pro",
-          lang: "typescript",
-        })
-        .tokens.map(
-          (token): Context.TokenState => ({
-            id: nanoid(),
-            tokenList: token,
-            status: "visible",
-            origin: token.map((tt) => tt.content).join(""),
-          })
-        ),
-      timeline: [
-        {
-          id: selectedFrameId,
-          events: [],
-          selectedLines: HashSet.empty(),
-        },
-      ],
-    };
+  context: Context.Context,
+  invoke: {
+    input: ({ event }) => {
+      if (event.type === "xstate.init") {
+        return event.input;
+      }
+
+      throw new Error("Unexpected event type");
+    },
+    onDone: {
+      target: ".Idle",
+      actions: assign(({ event }) => event.output),
+    },
+    src: "onInit",
   },
   initial: "Idle",
   states: {
+    AddingLines: {
+      invoke: {
+        src: "onAddEvent",
+        input: ({ context, event }) => {
+          if (event.type === "add-event") {
+            return { context, params: event };
+          }
+
+          throw new Error("Unexpected event type");
+        },
+        onDone: {
+          target: "Idle",
+          actions: assign(({ event }) => event.output),
+        },
+      },
+    },
     Idle: {
       on: {
         "select-toggle": {
@@ -76,11 +86,7 @@ export const editorMachine = setup({
           },
         },
         "add-event": {
-          target: "Idle",
-          actions: {
-            type: "onAddEvent",
-            params: ({ event }) => event,
-          },
+          target: "AddingLines",
         },
         "add-frame": {
           target: "Idle",

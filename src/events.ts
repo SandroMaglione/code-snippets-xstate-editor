@@ -1,4 +1,11 @@
 import { Data } from "effect";
+import * as Input from "./input";
+
+/** https://stately.ai/docs/input#initial-event-input */
+export interface AutoInit {
+  readonly type: "xstate.init";
+  readonly input: Input.Input;
+}
 
 export interface UpdateContent {
   readonly type: "update-content";
@@ -36,6 +43,7 @@ export interface UnselectAll {
 }
 
 export type Events =
+  | AutoInit
   | SelectToggle
   | UnselectAll
   | AddEvent

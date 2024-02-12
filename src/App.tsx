@@ -55,7 +55,7 @@ export default function App() {
     ReadonlyArray.takeWhile((tm) => tm.id !== snapshot.context.selectedFrameId)
   );
 
-  console.log({ timelineHistory });
+  console.log({ timelineHistory, state: snapshot.value });
 
   const currentCode = pipe(
     timelineHistory,
