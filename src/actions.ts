@@ -47,9 +47,10 @@ export const onAddEvent = (
                 ...frame.events,
                 ...Match.value(params.mutation).pipe(
                   Match.tag("Hidden", () =>
-                    [...frame.selectedLines].map((id) =>
-                      Context.EventMutation.Hidden({ id })
-                    )
+                    highlight.hideLines({
+                      code: context.code,
+                      selectedLines: frame.selectedLines,
+                    })
                   ),
                   Match.tag("AddAfter", () =>
                     highlight.addLines({
@@ -58,6 +59,13 @@ export const onAddEvent = (
                       selectedLines: frame.selectedLines,
                     })
                   ),
+                  Match.tag("UpdateAt", () => [
+                    highlight.updateLine({
+                      code: context.code,
+                      content: context.content,
+                      selectedLines: frame.selectedLines,
+                    }),
+                  ]),
                   Match.exhaustive
                 ),
               ],

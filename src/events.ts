@@ -20,6 +20,7 @@ export interface SelectToggle {
 export type EventSend = Data.TaggedEnum<{
   Hidden: {};
   AddAfter: {};
+  UpdateAt: {};
 }>;
 export const EventSend = Data.taggedEnum<EventSend>();
 

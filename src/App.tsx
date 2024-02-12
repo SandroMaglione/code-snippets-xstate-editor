@@ -59,15 +59,16 @@ export default function App() {
         ReadonlyArray.reduce(code, (ts, event) =>
           Match.value(event).pipe(
             Match.tag("Hidden", (e) =>
-              ts.map((token) =>
-                token.id !== e.id
-                  ? token
-                  : { ...token, status: "hidden" as const }
-              )
+              ts.map((token) => (token.id !== e.token.id ? token : e.token))
             ),
             Match.tag("AddAfter", (e) =>
               ts.flatMap((token) =>
                 token.id !== e.id ? [token] : [token, e.newToken]
+              )
+            ),
+            Match.tag("UpdateAt", (e) =>
+              ts.flatMap((token) =>
+                token.id !== e.id ? [token] : [e.newToken]
               )
             ),
             Match.exhaustive
@@ -89,7 +90,10 @@ export default function App() {
       >
         <code>
           {currentCode.map((token) => (
-            <AnimatePresence key={token.id}>
+            <AnimatePresence
+              key={token.id}
+              mode={token.status === "updated" ? "popLayout" : "sync"}
+            >
               {token.status !== "hidden" && (
                 <span style={{ display: "flex", columnGap: "1rem" }}>
                   <button
@@ -98,7 +102,7 @@ export default function App() {
                       send({ type: "select-toggle", id: token.id })
                     }
                   >
-                    S
+                    {token.status}
                   </button>
                   <motion.span
                     id={token.id}
@@ -167,7 +171,7 @@ export default function App() {
                   })
                 }
               >
-                Visible
+                Add after
               </button>
               <button
                 type="button"
@@ -180,6 +184,18 @@ export default function App() {
                 }
               >
                 Hidden
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  send({
+                    type: "add-event",
+                    mutation: Events.EventSend.UpdateAt(),
+                    frameId: frame.id,
+                  })
+                }
+              >
+                Update at
               </button>
             </div>
 

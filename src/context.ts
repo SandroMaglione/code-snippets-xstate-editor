@@ -4,13 +4,14 @@ import type { ThemedToken } from "shiki";
 export interface TokenState {
   readonly id: string;
   readonly tokenList: ThemedToken[];
-  readonly status: "hidden" | "visible";
+  readonly status: "hidden" | "visible" | "added" | "updated";
   readonly origin: string;
 }
 
 export type EventMutation = Data.TaggedEnum<{
-  Hidden: { readonly id: string };
+  Hidden: { readonly id: string; readonly token: TokenState };
   AddAfter: { readonly id: string; readonly newToken: TokenState };
+  UpdateAt: { readonly id: string; readonly newToken: TokenState };
 }>;
 export const EventMutation = Data.taggedEnum<EventMutation>();
 
