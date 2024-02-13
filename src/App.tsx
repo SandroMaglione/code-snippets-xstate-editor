@@ -1,82 +1,26 @@
 import { useMachine } from "@xstate/react";
-import { HashSet, Match, Option, ReadonlyArray, pipe } from "effect";
+import { HashSet, Option, pipe } from "effect";
 import { AnimatePresence, motion } from "framer-motion";
+import * as Computed from "./machine/computed";
 import * as Events from "./machine/events";
 import { editorMachine } from "./machine/machine";
 
-const code = `return signUpRequest.pipe(
-  Effect.provideService(Request.Request, req),
-  Effect.tapError((error) =>
-    Effect.logError("Newsletter error")
-  ),
-  Effect.mapError(
-    flow(
-      Match.value,
-      Match.tags({
-        RequestJsonError: () =>
-          "Something wrong in the request, please try again 🙏🏼",
-        MissingEmailError: () =>
-          "No email received it seems, mind trying again? 🙏🏼",
-        ParseError: () => "The regex told me that this email is not valid 🤷🏼‍♂️",
-        NewsletterSignUpResponseError: () =>
-          "Erm, there was an error while adding your email to the list, please try again 🙏🏼",
-        NewsletterSignUpUnexpectedError: () =>
-          "Erm, there was an error while adding your email to the list, please try again 🙏🏼",
-      }),
-      Match.orElse(() => "Unknown error (a bug 🐞), please try again 🙏🏼")
-    )
-  ),
-  Effect.map(() => new Response(JSON.stringify(true), { status: 200 })),
-  Effect.catchAll((error) =>
-    Effect.succeed(new Response(JSON.stringify({ error }), { status: 500 }))
-  ),
-  Logger.withMinimumLogLevel(LogLevel.All),
-  Effect.runPromise
-);`;
+const code = `import { Context, Effect } from "effect"
+
+`;
 
 export default function App() {
   const [snapshot, send] = useMachine(editorMachine, {
     input: { source: code },
   });
 
-  const timelineSelected = pipe(
-    snapshot.context.timeline,
-    ReadonlyArray.findFirst((tm) => tm.id === snapshot.context.selectedFrameId)
-  );
+  const timelineSelected = Computed.timelineSelected({
+    context: snapshot.context,
+  });
 
-  const timelineHistory = pipe(
-    snapshot.context.timeline,
-    ReadonlyArray.takeWhile((tm) => tm.id !== snapshot.context.selectedFrameId)
-  );
-
-  console.log({ timelineHistory, state: snapshot.value });
-
-  const currentCode = pipe(
-    timelineHistory,
-    ReadonlyArray.reduce(snapshot.context.code, (code, tm) =>
-      pipe(
-        tm.events,
-        ReadonlyArray.reduce(code, (ts, event) =>
-          Match.value(event).pipe(
-            Match.tag("Hidden", (e) =>
-              ts.map((token) => (token.id !== e.token.id ? token : e.token))
-            ),
-            Match.tag("AddAfter", (e) =>
-              ts.flatMap((token) =>
-                token.id !== e.id ? [token] : [token, e.newToken]
-              )
-            ),
-            Match.tag("UpdateAt", (e) =>
-              ts.flatMap((token) =>
-                token.id !== e.id ? [token] : [e.newToken]
-              )
-            ),
-            Match.exhaustive
-          )
-        )
-      )
-    )
-  );
+  const currentCode = Computed.currentCode({
+    context: snapshot.context,
+  });
 
   return (
     <div>
@@ -101,6 +45,18 @@ export default function App() {
                     onClick={() =>
                       send({ type: "select-toggle", id: token.id })
                     }
+                    style={{
+                      width: 120,
+                      backgroundColor: pipe(
+                        timelineSelected,
+                        Option.map((tm) =>
+                          tm.selectedLines.pipe(HashSet.has(token.id))
+                        ),
+                        Option.getOrElse(() => false)
+                      )
+                        ? "#fff"
+                        : undefined,
+                    }}
                   >
                     {token.status}
                   </button>
@@ -112,15 +68,6 @@ export default function App() {
                     animate={{
                       opacity: 1,
                       x: 0,
-                      backgroundColor: pipe(
-                        timelineSelected,
-                        Option.map((tm) =>
-                          tm.selectedLines.pipe(HashSet.has(token.id))
-                        ),
-                        Option.getOrElse(() => false)
-                      )
-                        ? "#fff"
-                        : undefined,
                     }}
                     initial={{ opacity: 0, x: 20 }}
                     exit={{ opacity: 0, x: 20 }}

@@ -70,6 +70,8 @@ export const HighlightLive = Layer.effect(
           ),
           Option.map((tsWithIndex) => {
             const addLines = content.split("\n");
+            console.log({ addLines });
+
             return pipe(
               code,
               ReadonlyArray.flatMap((ts, i) =>
@@ -83,8 +85,8 @@ export const HighlightLive = Layer.effect(
                 }).tokens,
               (list) =>
                 list.slice(
-                  tsWithIndex.index,
-                  tsWithIndex.index + addLines.length
+                  tsWithIndex.index + 1,
+                  tsWithIndex.index + addLines.length + 1
                 ),
               ReadonlyArray.map((tokenList, i) =>
                 ContextState.EventMutation.AddAfter({
@@ -96,7 +98,8 @@ export const HighlightLive = Layer.effect(
                     tokenList,
                   },
                 })
-              )
+              ),
+              ReadonlyArray.reverse
             );
           }),
           Option.getOrElse(() => [])

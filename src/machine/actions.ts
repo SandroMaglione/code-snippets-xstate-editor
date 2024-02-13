@@ -2,6 +2,7 @@ import { Effect, HashSet, Layer, Match } from "effect";
 import { nanoid } from "nanoid";
 import * as Highlight from "../Highlight";
 import * as Highlighter from "../Highlighter";
+import * as Computed from "./computed";
 import type * as Context from "./context";
 import type * as Events from "./events";
 
@@ -48,20 +49,20 @@ export const onAddEvent = (
                 ...Match.value(params.mutation).pipe(
                   Match.tag("Hidden", () =>
                     highlight.hideLines({
-                      code: context.code,
+                      code: Computed.currentCode({ context }),
                       selectedLines: frame.selectedLines,
                     })
                   ),
                   Match.tag("AddAfter", () =>
                     highlight.addLines({
-                      code: context.code,
+                      code: Computed.currentCode({ context }),
                       content: context.content,
                       selectedLines: frame.selectedLines,
                     })
                   ),
                   Match.tag("UpdateAt", () => [
                     highlight.updateLine({
-                      code: context.code,
+                      code: Computed.currentCode({ context }),
                       content: context.content,
                       selectedLines: frame.selectedLines,
                     }),
