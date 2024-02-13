@@ -13,7 +13,7 @@ export const editorMachine = setup({
   },
   actors: {
     onInit: fromPromise<Context.Context, Input.Input>(({ input }) =>
-      Input.init(input).pipe(Effect.runPromise)
+      Input.Input(input).pipe(Effect.runPromise)
     ),
     onAddEvent: fromPromise<
       Partial<Context.Context>,

@@ -7,7 +7,7 @@ export interface Input {
   readonly source: string;
 }
 
-export const init = (input: Input): Effect.Effect<Context.Context> =>
+export const Input = (input: Input): Effect.Effect<Context.Context> =>
   Effect.gen(function* (_) {
     const highlighter = yield* _(Highlighter.Highlighter);
     const { tokens, bg, fg, themeName } = highlighter.codeToTokens(
