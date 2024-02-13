@@ -9,7 +9,7 @@ import {
 } from "effect";
 import { nanoid } from "nanoid";
 import * as Highlighter from "./Highlighter";
-import * as ContextState from "./context";
+import * as ContextState from "./machine/context";
 
 export class Highlight extends Context.Tag("Highlight")<
   Highlight,

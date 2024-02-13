@@ -1,6 +1,6 @@
 import { Effect, HashSet } from "effect";
 import { nanoid } from "nanoid";
-import * as Highlighter from "./Highlighter";
+import * as Highlighter from "../Highlighter";
 import * as Context from "./context";
 
 export interface Input {

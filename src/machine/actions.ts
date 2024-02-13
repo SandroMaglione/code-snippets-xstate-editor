@@ -1,7 +1,7 @@
 import { Effect, HashSet, Layer, Match } from "effect";
 import { nanoid } from "nanoid";
-import * as Highlight from "./Highlight";
-import * as Highlighter from "./Highlighter";
+import * as Highlight from "../Highlight";
+import * as Highlighter from "../Highlighter";
 import * as Context from "./context";
 import type * as Events from "./events";
 

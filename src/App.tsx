@@ -1,8 +1,8 @@
 import { useMachine } from "@xstate/react";
 import { HashSet, Match, Option, ReadonlyArray, pipe } from "effect";
 import { AnimatePresence, motion } from "framer-motion";
-import * as Events from "./events";
-import { editorMachine } from "./machine";
+import * as Events from "./machine/events";
+import { editorMachine } from "./machine/machine";
 
 const code = `return signUpRequest.pipe(
   Effect.provideService(Request.Request, req),
