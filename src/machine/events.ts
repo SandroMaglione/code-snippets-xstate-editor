@@ -1,5 +1,5 @@
 import { Data } from "effect";
-import * as Input from "./input";
+import type * as Input from "./input";
 
 /** https://stately.ai/docs/input#initial-event-input */
 export interface AutoInit {

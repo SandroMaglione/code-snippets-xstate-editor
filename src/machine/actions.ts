@@ -2,7 +2,7 @@ import { Effect, HashSet, Layer, Match } from "effect";
 import { nanoid } from "nanoid";
 import * as Highlight from "../Highlight";
 import * as Highlighter from "../Highlighter";
-import * as Context from "./context";
+import type * as Context from "./context";
 import type * as Events from "./events";
 
 export const onSelectToggle = (
@@ -34,7 +34,7 @@ export const onUnselectAll = (
 export const onAddEvent = (
   context: Context.Context,
   params: Events.AddEvent
-): Effect.Effect<Partial<Context.Context>> =>
+): Promise<Partial<Context.Context>> =>
   Effect.gen(function* (_) {
     const highlight = yield* _(Highlight.Highlight);
     return {
@@ -75,7 +75,8 @@ export const onAddEvent = (
   }).pipe(
     Effect.provide(
       Highlight.HighlightLive.pipe(Layer.provide(Highlighter.HighlighterLive))
-    )
+    ),
+    Effect.runPromise
   );
 
 export const onAddFrame = (

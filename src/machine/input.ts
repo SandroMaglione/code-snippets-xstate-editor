@@ -1,13 +1,13 @@
 import { Effect, HashSet } from "effect";
 import { nanoid } from "nanoid";
 import * as Highlighter from "../Highlighter";
-import * as Context from "./context";
+import type * as Context from "./context";
 
 export interface Input {
   readonly source: string;
 }
 
-export const Input = (input: Input): Effect.Effect<Context.Context> =>
+export const Input = (input: Input): Promise<Context.Context> =>
   Effect.gen(function* (_) {
     const highlighter = yield* _(Highlighter.Highlighter);
     const { tokens, bg, fg, themeName } = highlighter.codeToTokens(
@@ -42,4 +42,4 @@ export const Input = (input: Input): Effect.Effect<Context.Context> =>
         },
       ],
     };
-  }).pipe(Effect.provide(Highlighter.HighlighterLive));
+  }).pipe(Effect.provide(Highlighter.HighlighterLive), Effect.runPromise);

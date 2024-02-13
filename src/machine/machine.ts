@@ -1,4 +1,3 @@
-import { Effect } from "effect";
 import { assign, fromPromise, setup } from "xstate";
 import * as Actions from "./actions";
 import * as Context from "./context";
@@ -13,14 +12,12 @@ export const editorMachine = setup({
   },
   actors: {
     onInit: fromPromise<Context.Context, Input.Input>(({ input }) =>
-      Input.Input(input).pipe(Effect.runPromise)
+      Input.Input(input)
     ),
     onAddEvent: fromPromise<
       Partial<Context.Context>,
       { params: Events.AddEvent; context: Context.Context }
-    >(({ input: { context, params } }) =>
-      Actions.onAddEvent(context, params).pipe(Effect.runPromise)
-    ),
+    >(({ input: { context, params } }) => Actions.onAddEvent(context, params)),
   },
   actions: {
     onSelectToggle: assign(({ context }, params: Events.SelectToggle) =>
