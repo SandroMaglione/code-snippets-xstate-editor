@@ -43,6 +43,9 @@ export const editorMachine = setup({
 
       throw new Error("Unexpected event type");
     },
+    onError: {
+      target: ".Idle",
+    },
     onDone: {
       target: ".Idle",
       actions: assign(({ event }) => event.output),
